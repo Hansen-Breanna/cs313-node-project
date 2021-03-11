@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+        <script>
+            function loadDoc() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("demo").innerHTML =
+                this.responseText;
+                }
+            };
+            console.log(location);
+            var URL = "https://api.openweathermap.org/data/2.5/weather?q=Pocatello&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial"
+            xhttp.open("GET", URL, true);
+            xhttp.send();
+            }
+        </script>
+    </head>
+    <body>
+        <main>
+            <%= location %>
+            <div id="demo">
+                <h1>The XMLHttpRequest Object</h1>
+                <button type="button" onclick="loadDoc()">Change Content</button>
+            </div>
+        </main>
+    </body>
+</html>
