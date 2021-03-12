@@ -15,7 +15,7 @@
           this.responseText;
           }
       };
-      xhttp.open("GET", "http://localhost:4000/getWeather?location="+location, true);
+      xhttp.open("GET", "https://api.openweathermap.org/data/2.5/weather?q=" + location + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial, true);
       xhttp.send();
     }
   </script>
