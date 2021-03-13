@@ -3,7 +3,7 @@
 <head>
   <%- include ("../partials/header.ejs") %>
   <script>
-    function getWeather(){
+    function weather(){
       var location = document.getElementById("location").value; 
       loadDoc(location);
     }
@@ -13,9 +13,10 @@
           if (this.readyState == 4 && this.status == 200) {
           document.getElementById("output").innerHTML =
           this.responseText;
-          }
+          } 
       };
-      xhttp.open("GET", "https://api.openweathermap.org/data/2.5/weather?q=" + location + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial, true);
+      xhttp.open("GET", "https://api.openweathermap.org/data/2.5/weather?q=" + location + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial", true);
+      xhttp.open("GET", "localhost:4000/api/getWeather/?q=" + location, true);
       xhttp.send();
     }
   </script>
@@ -29,7 +30,7 @@
   <div class="container">
     <form action="/getWeather" method="GET">
       <input type="text" id="location" name="location" placeholder="Search by City">
-      <input class="btn bg-success" onclick="getWeather()">
+      <input class="btn bg-success" onclick="weather()">
     </form>
   </div>
 </div>

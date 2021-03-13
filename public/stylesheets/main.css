@@ -1,3 +1,15 @@
+body {
+  background-image: url("../images/clouds-over-farms.jpg");
+  background-color: #cccccc;
+  background-size: cover;
+  height: 100vh;
+}
+.bg-blue {
+  background-color: #18458b;
+}
+.bg-yellow {
+  background-color: #F9B90F;
+}
 .jumbotron {
   background: #05668d;
   padding-bottom: 30px; 
@@ -17,3 +29,45 @@
 .navbar + .jumbotron {
   margin-top: -40px; 
 }
+
+.font-lg {
+  font-size: 4em;
+  font-weight: bold;
+}
+
+#currentData {
+  border: 1px solid gray;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.yellow-line {
+  border: 3px solid #F9B90F;
+  border-radius: 5px;
+  background-color: #F9B90F;
+  width: 50px;
+}
+
+h1 {
+  color: #fff;
+  font-size: 3em;
+}
+
+.ft-size-2 {
+  font-size: 1.25em;
+}
+
+.home-div {
+  height: 95vh;
+}
+
+.search {
+  max-width: 500px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+@media (min-width: 576px) {
+  h1 {
+    font-size: 4em;
+  }
+ }

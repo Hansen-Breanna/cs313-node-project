@@ -2,6 +2,7 @@ require('dotenv').config()
 const https = require('https');
 const express = require('express')
 const path = require('path')
+const axios = require('axios')
 const PORT = process.env.PORT || 4000
 const app = express()
 app.use(express.urlencoded({
@@ -18,7 +19,27 @@ app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'ejs')
 app.get('/', (req, res) => res.render('pages/index'))
 app.get('/getWeather', getWeather)
+app.get('/location', (req, res) => res.render('pages/location')) //
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`))
+
+
+
+app.get('/weather',(req,res) => {
+  console.log('weather got called');
+  var location = req.query.location;
+  axios.get("https://api.openweathermap.org/data/2.5/weather?q=" + location + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial")
+  .then(response => {
+    res.status(200).json(response.data)
+  })
+  .catch(error => {
+    console.log('There was an error');
+    console.log(error);
+  });
+  })
+
+
+
+
 
 async function getWeather(req, res) {
   var location = req.query.location;
@@ -28,6 +49,7 @@ async function getWeather(req, res) {
 
   https.get(current, (resp) => {
     let data = '';
+    console.log(current);
 
     // A chunk of data has been received.
     resp.on('data', (chunk) => {
