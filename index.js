@@ -9,7 +9,8 @@ app.use(express.urlencoded({
 
 // connect to database
 const { Pool } = require("pg");
-var connectionString = process.env.DATABASE_URL;
+var connectionString = "postgres://ifiibuckhdcfbq:75bb6b850d1098ff80f10bbfccc9fbc201ea8a584c88ebfdf7dc77fe4be0dcd5@ec2-54-161-239-198.compute-1.amazonaws.com:5432/d14qmu45c0uguh?ssl=true"; 
+//process.env.DATABASE_URL;
 const pool = new Pool({connectionString: connectionString});
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 app.use(express.static(path.join(__dirname, 'public')))
