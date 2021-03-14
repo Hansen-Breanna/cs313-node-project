@@ -13,16 +13,15 @@ function weather() {
       var feelsLike = Math.round(data.main.feels_like);
       var wind = Math.round(data.wind.speed);
       var windDirection = getDirection(data.wind.deg);
-      var gusts = Math.round(data.wind.gust);
       var icon = "<img src='http://openweathermap.org/img/w/" + data.weather[0].icon + ".png' class='icon' alt='Weather Icon'>";
 
-      newhtml = '<div class="d-flex flex-column"><div class="search p-2 rounded">';
+      newhtml = '<div class="d-flex flex-column align-items-center justify-content-center"><div class="col-8 mt-5 search p-2 rounded">';
       newhtml += '<input type="text" class="rounded p-2 form-control" id="location" name="location" placeholder="Search by City">';
       newhtml += '<button type="button" class="btn btn-small bg-yellow col-12 mt-2" onclick="weather()">Search</button></div>"';
-      newhtml += "<div id='currentData' class='col-12 col-md-6 mt-5 font-md text-left pl-5 py-3'><h2>" + location + "</h2>";
+      newhtml += "<div id='currentData' class='mt-5 font-md text-left pl-5 py-3'><h2>" + location + "</h2>";
       newhtml += "<p class='mb-0'>As of " + time + "</p><p class='font-xlg mb-0'>" + icon + temp + "&deg;</p>";
       newhtml += "<p class='mb-0'>Feels like " + feelsLike + "&deg;</p><p class='font-lg mb-0'>" + description + "</p>";
-      newhtml += "<p>Wind " + windDirection + " " + wind + " mph</p><p class='mb-0'>Wind gusts " + gusts + " mph</p></div></div>";
+      newhtml += "<p>Wind " + windDirection + " " + wind + " mph</p></div>";
       JSON.stringify(data);       
       $('#results').html(newhtml);
     }
