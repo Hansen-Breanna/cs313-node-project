@@ -1,10 +1,12 @@
 function weather() {
   var location = document.getElementById("location").value;
+
   $.ajax({
     url: '/weather?location='+location,
     type: 'GET',
     dataType: 'json', 
     success: (data) => {
+      console.log(data);
       var time = new Date().toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'});
       var temp = Math.round(data.main.temp);
       var description = data.weather[0].main;
@@ -12,11 +14,12 @@ function weather() {
       var wind = Math.round(data.wind.speed);
       var windDirection = getDirection(data.wind.deg);
       var gusts = Math.round(data.wind.gust);
-      var icon = "<img src='http://openweathermap.org/img/w/" + data.weather[0].icon + ".png' alt='Weather Icon'>";
+      var icon = "<img src='http://openweathermap.org/img/w/" + data.weather[0].icon + ".png' class='icon' alt='Weather Icon'>";
 
-      newhtml = "<div id='currentData' class='w-75 mt-5'><h1>" + location + "</h1><p>As of " + time + "</p><p class='font-lg'>" + icon + temp + "&deg;</p>";
-      newhtml += "<p>Feels like " + feelsLike + "&deg;</p><p class='font-md'>" + description + "</p><p>Wind " + windDirection + " ";
-      newhtml += wind + " mph</p><p>Wind gusts " + gusts + " mph</p></div>";
+      newhtml = "<div id='currentData' class='w-75 mt-5 font-md text-left pl-5 py-3'><h2>" + location + "</h2>";
+      newhtml += "<p class='mb-0'>As of " + time + "</p><p class='font-xlg mb-0'>" + icon + temp + "&deg;</p>";
+      newhtml += "<p class='mb-0'>Feels like " + feelsLike + "&deg;</p><p class='font-lg mb-0'>" + description + "</p>";
+      newhtml += "<p>Wind " + windDirection + " " + wind + " mph</p><p class='mb-0'>Wind gusts " + gusts + " mph</p></div>";
       JSON.stringify(data);       
       $('#results').html(newhtml);
     }

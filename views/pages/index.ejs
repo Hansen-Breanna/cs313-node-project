@@ -1,55 +1,32 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <%- include ("../partials/header.ejs") %>
-  <script>
-    function weather(){
-      var location = document.getElementById("location").value; 
-      loadDoc(location);
-    }
-    function loadDoc(location) {
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
-          if (this.readyState == 4 && this.status == 200) {
-          document.getElementById("output").innerHTML =
-          this.responseText;
-          } 
-      };
-      xhttp.open("GET", "https://api.openweathermap.org/data/2.5/weather?q=" + location + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial", true);
-      xhttp.open("GET", "localhost:4000/api/getWeather/?q=" + location, true);
-      xhttp.send();
-    }
-  </script>
-</head>
-
-<body>
-
-  <%- include ("../partials/nav.ejs") %>
-
-<div class="jumbotron text-center">
-  <div class="container">
-    <form action="/getWeather" method="GET">
-      <input type="text" id="location" name="location" placeholder="Search by City">
-      <input class="btn bg-success" onclick="weather()">
-    </form>
-  </div>
-</div>
-<div class="container">
-  <div class="alert alert-info text-center" role="alert">
-    To deploy your own copy, and learn the fundamentals of the Heroku platform, head over to the <a href="https://devcenter.heroku.com/articles/getting-started-with-nodejs" class="alert-link">Getting Started on Heroku with Node.js</a> tutorial.
-  </div>
-  <hr>
-  <div class="row">
-    <div id="output" class="col-md-6">
-    </div>
-    <div class="col-md-6">
-    </div>
-  </div> <!-- row -->
-   <div class="alert alert-info text-center" role="alert">
-    Please do work through the Getting Started guide, even if you do know how to build such an application.  The guide covers the basics of working with Heroku, and will familiarize you with all the concepts you need in order to build and deploy your own apps.
-  </div>
-</div>
-
-
-</body>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Home - WeatherView Forecaster</title>
+        <meta name="description" content="Get up-to-date weather for any city with the WeatherView Forecaster.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script src="js/jquery-3.6.0.min.js"></script>
+        <script src="js/weather.js"></script>
+    </head>
+    <body>
+        <nav>
+            <%- include ("../partials/nav.ejs") %>
+        </nav>
+        <main>
+            <div class="container-fluid d-flex flex-column">
+                <div id="results" class="home-div row p-3 d-flex flex-column text-center justify-content-center align-items-center">
+                    <h1 class="text-light">WeatherView Forecaster</h1>
+                    <hr class="yellow-line">
+                    <p class="ft-size-2 text-light font-weight-bold">Get current and forecasted weather by city with WeatherView.</p>
+                    <div class="m-5 w-75 search p-2 rounded">
+                        <input type="text" class="rounded p-2 form-control" id="location" name="location" placeholder="Search by City">
+                        <button type="button" class="btn btn-small bg-yellow col-12 mt-2" onclick="weather()">Search</button> 
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
 </html>

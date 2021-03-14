@@ -10,62 +10,48 @@ body {
 .bg-yellow {
   background-color: #F9B90F;
 }
-.jumbotron {
-  background: #05668d;
-  padding-bottom: 30px; 
-}
-.jumbotron .btn-primary {
-  background: #845ac7;
-  border-color: #845ac7; 
-}
-.jumbotron .btn-primary:hover {
-  background: #7646c1; 
-}
-.jumbotron p {
-  color: #d9ccee;
-  max-width: 75%;
-  margin: 1em auto 2em; 
-}
-.navbar + .jumbotron {
-  margin-top: -40px; 
-}
-
-.font-lg {
+.font-xlg {
   font-size: 4em;
   font-weight: bold;
 }
-
+.font-lg {
+  font-size: 2em;
+}
+.font-md {
+  font-size: 1.375em;
+}
 #currentData {
   border: 1px solid gray;
-  border-radius: 20px;
-  background: #fff;
+  background-color: #18458b;
+  background-image: linear-gradient(#18458b 0%, #fff 100%);
 }
-
 .yellow-line {
   border: 3px solid #F9B90F;
   border-radius: 5px;
   background-color: #F9B90F;
   width: 50px;
 }
-
 h1 {
   color: #fff;
   font-size: 3em;
 }
-
+h2 {
+  font-size: 2.5em;
+}
 .ft-size-2 {
   font-size: 1.25em;
 }
-
 .home-div {
-  height: 95vh;
+  height: 85vh;
 }
-
 .search {
   max-width: 500px;
   background: rgba(255, 255, 255, 0.3);
 }
-
+.icon {
+  height: 75px;
+  width: auto;
+}
 @media (min-width: 576px) {
   h1 {
     font-size: 4em;
