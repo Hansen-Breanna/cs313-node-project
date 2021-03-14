@@ -19,7 +19,7 @@ function weather() {
       newhtml = '<div class="w-25 search p-2 rounded">';
       newhtml += '<input type="text" class="rounded p-2 form-control" id="location" name="location" placeholder="Search by City">';
       newhtml += '<button type="button" class="btn btn-small bg-yellow col-12 mt-2" onclick="weather()">Search</button></div>"';
-      newhtml += "<div id='currentData' class='w-75 mt-5 font-md text-left pl-5 py-3'><h2>" + location + "</h2>";
+      newhtml += "<div id='currentData' class='col-12 col-md-6 mt-5 font-md text-left pl-5 py-3'><h2>" + location + "</h2>";
       newhtml += "<p class='mb-0'>As of " + time + "</p><p class='font-xlg mb-0'>" + icon + temp + "&deg;</p>";
       newhtml += "<p class='mb-0'>Feels like " + feelsLike + "&deg;</p><p class='font-lg mb-0'>" + description + "</p>";
       newhtml += "<p>Wind " + windDirection + " " + wind + " mph</p><p class='mb-0'>Wind gusts " + gusts + " mph</p></div>";
