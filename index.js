@@ -25,10 +25,13 @@ app.get('/weather',(req,res) => {
   getUrlFromDB(currentUrl, function(error, result) {
     // if not in table, insert new data
     if (result[0] == null) {
+      // get current date
+      var dateObj = new Date();
+      var date = getDate(dateObj);
       var time = new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
       axios.get(currentUrl)
       .then(response => {
-        insertData(currentUrl, location, time, response.data);
+        insertData(currentUrl, location, date, time, response.data);
         res.status(200).json(response.data)
       })
       .catch(error => {
@@ -36,17 +39,21 @@ app.get('/weather',(req,res) => {
         console.log(error);
       });
     } else {
+      // get current date
+      var dateObj = new Date();
+      var date = getDate(dateObj);
+      // get result date
+      var resultDate = getDate(result[0].date);
       // get current time
-      var date = new Date();
-      var seconds = date.getSeconds();
-      var minutes = date.getMinutes();
-      var hour = date.getHours();
-      var currentTime = hour + ":" + minutes + ":" + seconds;
-      
-      // Check if content more than 10 minutes olds
+      var currentTime = getTime(dateObj);
+      // Check if content more is from a different day
+      if (date > resultDate) {
+        updateData(currentUrl, location, date, currentTime, result[0].json);
+      }
+      // Check if content is more than 10 minutes old
       var difference = diffMinutes(currentTime, result[0].time);
       if (difference >= 10) {
-        updateData(currentUrl, location, currentTime, result[0].json);
+        updateData(currentUrl, location, date, currentTime, result[0].json);
       }
       res.status(200).json(JSON.parse(result[0].json));
     }
@@ -55,7 +62,7 @@ app.get('/weather',(req,res) => {
 
 // See if URL is in DB
 function getUrlFromDB(url, callback) {
-  var sql = "SELECT url, location, time, json FROM current WHERE url = $1";
+  var sql = "SELECT url, location, date, time, json FROM current WHERE url = $1";
   var params = [url];
 
   pool.query(sql, params, function(err, result) {
@@ -70,9 +77,9 @@ function getUrlFromDB(url, callback) {
 }
 
 // Insert data into Current table
-function insertData(url, location, time, data) {
-  var sql = "INSERT INTO current (url, location, time, json) VALUES ($1, $2, $3, $4)";
-  var params = [url, location, time, data];
+function insertData(url, location, date, time, data) {
+  var sql = "INSERT INTO current (url, location, date, time, json) VALUES ($1, $2, $3, $4, $5)";
+  var params = [url, location, date, time, data];
 
   pool.query(sql, params, function(err, result) {
     if (err) {
@@ -87,14 +94,18 @@ function insertData(url, location, time, data) {
 function diffMinutes(currentTime, resultDate) {
   var current = currentTime.split(':');
   var result = resultDate.split(':');
-  var diff =(current[1] - result[1]);
-  return Math.abs(Math.round(diff));
+  if (current[0] != result[0]) {
+    return 60;
+  } else {
+    var diff = (current[1] - result[1]);
+    return Math.abs(Math.round(diff));
+  }
 }
 
 // Update data by URL
-function updateData(url, location, time, data) {
-  var sql = "UPDATE current SET url = $1, location = $2, time = $3, json = $4 WHERE url = $1";
-  var params = [url, location, time, data];
+function updateData(url, location, date, time, data) {
+  var sql = "UPDATE current SET url = $1, location = $2, date = $3, time = $4, json = $5 WHERE url = $1";
+  var params = [url, location, date, time, data];
 
   pool.query(sql, params, function(err, result) {
     if (err) {
@@ -102,6 +113,22 @@ function updateData(url, location, time, data) {
       console.log(err);
     }
   }); 
+}
+
+function getDate(dateObj) {
+  var month = dateObj.getUTCMonth() + 1; //months from 1-12
+  var day = dateObj.getUTCDate();
+  var year = dateObj.getUTCFullYear();
+  var date = year + "-" + month + "-" + day;
+  return date;
+}
+
+function getTime(dateObj) {
+  var seconds = dateObj.getSeconds();
+  var minutes = dateObj.getMinutes();
+  var hour = dateObj.getHours();
+  var currentTime = hour + ":" + minutes + ":" + seconds;
+  return currentTime;
 }
 
 // Code options for forecasted weather and aqi
