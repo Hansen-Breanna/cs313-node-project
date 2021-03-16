@@ -48,7 +48,8 @@ app.get('/weather',(req,res) => {
       // get current time
       var currentTime = getTime(dateObj);
       // Check if content more is from a different day
-      if (date > resultDate) {
+      
+      if (date !== resultDate) {
         updateData(currentUrl, location, date, currentTime, result[0].json);
       }
       // Check if content is more than 10 minutes old
