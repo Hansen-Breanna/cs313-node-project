@@ -19,9 +19,55 @@ app.set('view engine', 'ejs')
 app.get('/', (req, res) => res.render('pages/index'))
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
+app.post('/aqi',(req,res) => {
+  var lat = req.body.lat;
+  var lon = req.body.lon;
+  var aqiURL = "https://api.openweathermap.org/data/2.5/air_pollution?lat=" + lat + "&lon=" + lon + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
+  axios.get(aqiURL)
+      .then(response => { 
+        var aqi = response.data.list[0].main;
+        res.status(200).json(aqi)
+      })
+      .catch(error => {
+        console.log('There was an error retrieving the AQI.');
+        console.log(error);
+      });
+ })
+
+app.post('/forecast',(req,res) => {
+var lat = req.body.lat;
+var lon = req.body.lon;
+var forecast = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + lon + "&exclude=minutely&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
+axios.get(forecast)
+    .then(response => { 
+      var forecastData = response.data;
+      res.status(200).json(forecastData)
+    })
+    .catch(error => {
+      console.log('There was an error retrieving the forecast data.');
+      console.log(error);
+    });
+})
+
+app.post('/cityState',(req,res) => {
+  var lat = req.body.lat;
+  var lon = req.body.lon;
+  var url = "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" + lat + "&longitude=" + lon + "&localityLanguage=en";
+  axios.get(url)
+      .then(response => { 
+        var cityState = response.data;
+        res.status(200).json(cityState)
+      })
+      .catch(error => {
+        console.log('There was an error retrieving the forecast data.');
+        console.log(error);
+      });
+  })
+
 app.get('/weather',(req,res) => {
   var location = req.query.location;
-  var currentUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + location + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
+  var currentUrl = "https://api.openweathermap.org/data/2.5/weather?zip=" + location + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
+  console.log(currentUrl);
   // Check db for URL
   getUrlFromDB(currentUrl, function(error, result) {
     // if not in table, insert new data
@@ -30,6 +76,7 @@ app.get('/weather',(req,res) => {
       var dateObj = new Date();
       var date = getDate(dateObj);
       var time = new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+      // get data from API
       axios.get(currentUrl)
       .then(response => {
         insertData(currentUrl, location, date, time, response.data);
@@ -48,21 +95,37 @@ app.get('/weather',(req,res) => {
       // get current time
       var currentTime = getTime(dateObj);
       // Check if content more is from a different day
-      
       if (date !== resultDate) {
-        updateData(currentUrl, location, date, currentTime, result[0].json);
+        // get data from API
+        axios.get(currentUrl)
+        .then(response => {
+          updateData(currentUrl, location, date, currentTime, response.data);
+          res.status(200).json(response.data)
+        })
+        .catch(error => {
+          console.log('There was an error');
+          console.log(error);
+        });
       }
       // Check if content is more than 10 minutes old
       var difference = diffMinutes(currentTime, result[0].time);
       if (difference >= 10) {
-        updateData(currentUrl, location, date, currentTime, result[0].json);
+        // get data from API
+        axios.get(currentUrl)
+        .then(response => {
+          updateData(currentUrl, location, date, currentTime, response.data);
+        })
+        .catch(error => {
+          console.log('There was an error');
+          console.log(error);
+        });
       }
       res.status(200).json(JSON.parse(result[0].json));
     }
   });
   })
 
-// See if URL is in DB
+// See if current URL is in DB
 function getUrlFromDB(url, callback) {
   var sql = "SELECT url, location, date, time, json FROM current WHERE url = $1";
   var params = [url];
@@ -104,7 +167,7 @@ function diffMinutes(currentTime, resultDate) {
   }
 }
 
-// Update data by URL
+// Update current data by URL
 function updateData(url, location, date, time, data) {
   var sql = "UPDATE current SET url = $1, location = $2, date = $3, time = $4, json = $5 WHERE url = $1";
   var params = [url, location, date, time, data];
@@ -133,49 +196,26 @@ function getTime(dateObj) {
   return currentTime;
 }
 
-// Code options for forecasted weather and aqi
-// async function getWeather(req, res) {
-//   var location = req.query.location;
-//   var current = "https://api.openweathermap.org/data/2.5/weather?q=" + location + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
-//   var params = {location: location};
-//   console.log("Retrieving location with id: ", location);
+function insertAQI(url, location, date, time, data) {
+  var sql = "INSERT INTO hour_cache (url, location, date, time, json) VALUES ($1, $2, $3, $4, $5)";
+  var params = [url, location, date, time, data];
 
-//   https.get(current, (resp) => {
-//     let data = '';
-//     console.log(current);
+  pool.query(sql, params, function(err, result) {
+    if (err) {
+      console.log("An error with the DB occurred.");
+      console.log(err);
+    }
+  }); 
+}
 
-//     // A chunk of data has been received.
-//     resp.on('data', (chunk) => {
-//       data += chunk;
-//     });
+function insertForecast(url, location, date, time, data) {
+  var sql = "INSERT INTO hour_cache (url, location, date, time, json) VALUES ($1, $2, $3, $4, $5)";
+  var params = [url, location, date, time, data];
 
-//     // The whole response has been received. Print out the result.
-//     resp.on('end', () => {
-//       var weatherData = JSON.parse(data);
-//       console.log(weatherData);
-//       // get lat and lon
-//       var lon = weatherData['coord']['lon'];
-//       var lat = weatherData['coord']['lat'];
-
-//       // get url for forecasted weather
-//   	  var forecast = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + lon + "&exclude=minutely&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
-//       // get url for forecasted weather
-//       var aqi = "https://api.openweathermap.org/data/2.5/air_pollution?lat=" + lat + "&lon=" + lon + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
-//       var testUrl = "url.com";
-//       // check for existing URL in database
-//       var checkUrl = getUrlFromDB(aqi, function(error, result) {
-//         console.log("Back from DB with result: ", result);
-//         if (result[0] == null) {
-//           console.log("came back null");
-//           getData(aqi, location);
-//           getData(forecast, location);
-//         }
-//         //res.json(result);
-//       });
-//     });
-
-//   }).on("error", (err) => {
-//     console.log("Error: " + err.message);
-//   });
-     
-// }
+  pool.query(sql, params, function(err, result) {
+    if (err) {
+      console.log("An error with the DB occurred.");
+      console.log(err);
+    }
+  }); 
+}
