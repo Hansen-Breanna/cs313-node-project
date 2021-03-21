@@ -37,16 +37,78 @@ app.post('/aqi',(req,res) => {
 app.post('/forecast',(req,res) => {
 var lat = req.body.lat;
 var lon = req.body.lon;
-var forecast = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + lon + "&exclude=minutely&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
-axios.get(forecast)
-    .then(response => { 
-      var forecastData = response.data;
-      res.status(200).json(forecastData)
+var forecastUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + lon + "&exclude=minutely&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
+
+getUrlFromForecastDB(forecastUrl, function(error, result) {
+  // if not in table, insert new data
+  if (result[0] == null) {
+    // get current date
+    var dateObj = new Date();
+    var date = getDate(dateObj);
+    var time = new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+    // get data from API
+    axios.get(forecastUrl)
+    .then(response => {
+      insertForecast(forecastUrl, date, time, response.data);
+      res.status(200).json(response.data)
     })
     .catch(error => {
-      console.log('There was an error retrieving the forecast data.');
+      console.log('There was an error');
       console.log(error);
     });
+  } else {
+    // get current date
+    var dateObj = new Date();
+    var date = getDate(dateObj);
+    // get result date
+    var resultDate = getDate(result[0].date);
+    // get current time
+    var currentTime = getTime(dateObj);
+    // Check if content more is from a different day
+    if (date !== resultDate) {
+      // get data from API
+      axios.get(forecastUrl)
+      .then(response => {
+        updateForecast(forecastUrl, date, currentTime, response.data);
+        res.status(200).json(response.data)
+      })
+      .catch(error => {
+        console.log('There was an error');
+        console.log(error);
+      });
+    }
+    // Check if content is more than 60 minutes old
+    var difference = diffHour(currentTime, result[0].time);
+    if (difference >= 60) {
+      // get data from API
+      axios.get(forecastUrl)
+      .then(response => {
+        updateForecast(forecastUrl, date, currentTime, response.data);
+      })
+      .catch(error => {
+        console.log('There was an error');
+        console.log(error);
+      });
+    }
+    res.status(200).json(JSON.parse(result[0].json));
+  }
+});
+
+// // original
+// axios.get(forecast)
+//     .then(response => { 
+//       var forecastData = response.data;
+//       // get current date
+//       var dateObj = new Date();
+//       var date = getDate(dateObj);
+//       var time = new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });  
+//       insertForecast(forecast, date, time, response.data);
+//       res.status(200).json(forecastData)
+//     })
+//     .catch(error => {
+//       console.log('There was an error retrieving the forecast data.');
+//       console.log(error);
+//     });
 })
 
 app.post('/cityState',(req,res) => {
@@ -64,12 +126,14 @@ app.post('/cityState',(req,res) => {
       });
   })
 
+// app.get('/hourly', (req, res) => {
+// })
+
 app.get('/weather',(req,res) => {
   var location = req.query.location;
   var currentUrl = "https://api.openweathermap.org/data/2.5/weather?zip=" + location + "&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
-  console.log(currentUrl);
   // Check db for URL
-  getUrlFromDB(currentUrl, function(error, result) {
+  getUrlFromCurrentDB(currentUrl, function(error, result) {
     // if not in table, insert new data
     if (result[0] == null) {
       // get current date
@@ -126,8 +190,24 @@ app.get('/weather',(req,res) => {
   })
 
 // See if current URL is in DB
-function getUrlFromDB(url, callback) {
+function getUrlFromCurrentDB(url, callback) {
   var sql = "SELECT url, location, date, time, json FROM current WHERE url = $1";
+  var params = [url];
+
+  pool.query(sql, params, function(err, result) {
+    if (err) {
+      console.log("An error with the DB occurred.");
+      console.log(err);
+      callback(err, null);
+    }
+    // Send back result
+    callback(null, result.rows);
+  }); 
+}
+
+// See if current URL is in DB
+function getUrlFromForecastDB(url, callback) {
+  var sql = "SELECT url, date, time, json FROM current WHERE url = $1";
   var params = [url];
 
   pool.query(sql, params, function(err, result) {
@@ -167,10 +247,39 @@ function diffMinutes(currentTime, resultDate) {
   }
 }
 
+// Difference in hour
+// https://www.w3resource.com/javascript-exercises/javascript-date-exercise-44.php
+function diffHour(currentTime, resultDate) {
+  var current = currentTime.split(':');
+  var result = resultDate.split(':');
+  if (current[0] != result[0]) {
+    var check = current[1] - result[1];
+    if (check < 0) {
+      return 10;
+    } else {
+      return 70;
+    }
+  } else {
+    return 10;
+  }
+}
 // Update current data by URL
 function updateData(url, location, date, time, data) {
   var sql = "UPDATE current SET url = $1, location = $2, date = $3, time = $4, json = $5 WHERE url = $1";
   var params = [url, location, date, time, data];
+
+  pool.query(sql, params, function(err, result) {
+    if (err) {
+      console.log("An error with the DB occurred.");
+      console.log(err);
+    }
+  }); 
+}
+
+// Update forecast data by URL
+function updateForecast(url, date, time, data) {
+  var sql = "UPDATE forecast SET url = $1, date = $2, time = $3, json = $4 WHERE url = $1";
+  var params = [url, date, time, data];
 
   pool.query(sql, params, function(err, result) {
     if (err) {
@@ -197,7 +306,7 @@ function getTime(dateObj) {
 }
 
 function insertAQI(url, location, date, time, data) {
-  var sql = "INSERT INTO hour_cache (url, location, date, time, json) VALUES ($1, $2, $3, $4, $5)";
+  var sql = "INSERT INTO aqi (url, location, date, time, json) VALUES ($1, $2, $3, $4, $5)";
   var params = [url, location, date, time, data];
 
   pool.query(sql, params, function(err, result) {
@@ -208,9 +317,9 @@ function insertAQI(url, location, date, time, data) {
   }); 
 }
 
-function insertForecast(url, location, date, time, data) {
-  var sql = "INSERT INTO hour_cache (url, location, date, time, json) VALUES ($1, $2, $3, $4, $5)";
-  var params = [url, location, date, time, data];
+function insertForecast(url, date, time, data) {
+  var sql = "INSERT INTO forecast (url, date, time, json) VALUES ($1, $2, $3, $4)";
+  var params = [url, date, time, data];
 
   pool.query(sql, params, function(err, result) {
     if (err) {
