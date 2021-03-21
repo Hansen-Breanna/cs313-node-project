@@ -109,7 +109,6 @@ function getDirection(deg) {
 
 // get 7-day forecast
 function getForecast(coord) {
-  console.log("get forcast called with "+coord);
   $.ajax({
     url: '/forecast',
     type: 'POST',
@@ -146,9 +145,7 @@ function getForecast(coord) {
         var windDirection = getDirection(data.daily[i].wind_deg);
 
         // get date
-        const unixTimestamp = data.daily[i].dt;
-        const milliseconds = unixTimestamp * 1000;
-        const dateObject = new Date(milliseconds);
+        var dateObject = getDate(data.daily[i].dt);
         var DOW = dateObject.toLocaleString("default", { weekday: "short" })
         var date = dateObject.getDate();
 
@@ -172,9 +169,14 @@ function getForecast(coord) {
         alert.classList = "bg-danger";
         var p = document.createElement("p");
         console.log(data.alerts);
-        var start = data.alerts.start;
-        var end = data.alerts.end;
-        p.innerHTML = data.alerts + " from " + start + " to " + end;
+        var start = getDate(data.alerts[0].start);
+        var end = getDate(data.alerts[0].end);
+        var startDate = (start.getMonth() + 1) + " " + start.getDate();
+        var endDate = end.getDate();
+        p.innerHTML = data.alerts[0].event + " from " + start + " to " + end;
+        p.style.textAlign = "center";
+        p.style.padding = "15px 0";
+        p.style.color = "#fff";
         alert.append(p);
       }    
     },
@@ -250,11 +252,15 @@ function getCityState(coord) {
   });
 }
 
-// convert unix timestamp to hours and minutes
-function getTime(unix) {
-  const unixTimestamp = unix;
+function getDate(dt) {
+  const unixTimestamp = dt;
   const milliseconds = unixTimestamp * 1000;
   const dateObject = new Date(milliseconds);
+  return dateObject;
+}
+// convert unix timestamp to hours and minutes
+function getTime(unix) {
+  var dateObject = getDate(unix);
   var hour = dateObject.getHours();
   var minutes = dateObject.getMinutes();
   hour = ((hour + 11) % 12 + 1);
@@ -324,9 +330,7 @@ function getHourly(coord) {
 }
 
 function getHour(dt) {
-  const unixTimestamp = dt;
-  const milliseconds = unixTimestamp * 1000;
-  const dateObject = new Date(milliseconds);
+  var dateObject = getDate(dt);
   var hour = dateObject.getHours() + 1;
   if (hour > 12) {
     hour = hour - 12;
