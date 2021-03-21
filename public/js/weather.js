@@ -1,10 +1,4 @@
 //const { json } = require("express");
-$.getJSON("https://api.ipify.org?format=json", 
-function(data) { 
-$("#ip").html(data.ip); 
-sessionStorage.setItem("ip", data.ip);
-console.log(data.ip); 
-})
 
 function weather() {
   var location = document.getElementById("location").value;
@@ -16,6 +10,25 @@ function weather() {
     type: 'GET',
     dataType: 'json', 
     success: (data) => {
+      // add to nav
+    var nav = document.getElementById("links");
+    nav.innerHTML = "";
+    var li2 = document.createElement("li");
+    var coord = JSON.stringify(data.coord);
+    li2.innerHTML = "<a href='#' onclick='getHourly(" + coord  + ")'>Hourly</a>";
+    var li3 = document.createElement("li");
+    li3.innerHTML = "<a href='#' onclick'getForecast(" + coord + ")'>Daily</a>";
+    var li4 = document.createElement("li");
+    //li4.innerHTML = "<a href='/aqiDetails' onclick='aqiDetails()'>AQ Index</a>";
+    li2.style.padding = "0 10px";
+    li3.style.padding = "0 10px";
+    //li4.style.padding = "0 10px";
+    nav.append(li2);
+    nav.append(li3);
+    //nav.append(li4);
+
+      sessionStorage.setItem("lat", data.coord.lat);
+      sessionStorage.setItem("lon", data.coord.lon);
       // get city and state
       getCityState(data.coord);
 
@@ -53,6 +66,7 @@ function weather() {
     }
   });
 }
+
 
 // get wind direction
 function getDirection(deg) {
@@ -101,8 +115,6 @@ function getForecast(coord) {
     dataType: 'json',
     data: coord,
     success: (data) => {
-      console.log(data);
-
       // add forecast table
       var display = document.getElementById("forecast");
       display.innerHTML = "";
@@ -145,14 +157,6 @@ function getForecast(coord) {
         td3.innerHTML = rainPercent(data.daily[i].pop);
         td4.innerHTML = windDirection + " " + wind + " mph";
         td5.innerHTML = DOW + " " + date;
-      // hi/lo
-      // icon
-      // rain/snow, etc.
-      // % chance of rain
-      // wind icon
-      // wind direction
-      // wind mph
-      // drop down icon
         table.append(tr);
         tr.append(td5);
         tr.append(td2);
@@ -179,7 +183,6 @@ function getForecast(coord) {
     }
   });
 }
-
 
 // get AQI to display
 function getAQI(coord) {
@@ -221,7 +224,7 @@ function getAirQuality(aqi) {
 
 // convert rain amount to percentage
 function rainPercent(pop) {
-  var rain = pop * 100;
+  var rain = Math.round(pop * 100);
   var display = "&#128167; " + rain + "&percnt;";
   return display;
 }
@@ -258,29 +261,15 @@ function getTime(unix) {
   return time;
 }
 
-// get 48-hour weather display
-function getHourly(hours) {
-  console.log("here " + JSON.stringify(hours));
-  // $.ajax({
-  //   url: '/hourly?location=' + location,
-  //   type: 'GET',
-  //   dataType: 'json', 
-  //   success: (data) => {
-     // console.log(data);
-
-      // // get city and state
-      // getCityState(data.coord);
-
-      // // get sunrise and sunset times
-      // var sunrise = getTime(data.sys.sunrise);
-      // var sunset = getTime(data.sys.sunset)
-      
-      // var aqi = getAQI(data.coord);
-      // getForecast(data.coord);
-      // getAirQuality(aqi); 
-
-      // //from forecast
-
+// get 48-hour forecast
+function getHourly(coord) {
+  $.ajax({
+    url: '/hourly',
+    type: 'POST',
+    dataType: 'json',
+    data: coord,
+    success: (data) => {
+      // add forecast table
       var display = document.getElementById("forecast");
       display.innerHTML = "";
       display.style.backgroundColor = "#fff";
@@ -292,80 +281,58 @@ function getHourly(hours) {
       display.append(h2);
       var table = document.createElement("table");
       display.append(table);
-      // for (var i = 0; i < data.daily.length; i++) {
-      //   var tr = document.createElement("tr");
-      //   tr.style.borderBottom = "1px solid #c4e3ff";
-      //   tr.style.padding = "5px 15px";
-      //   var td1 = document.createElement("td");
-      //   var td2 = document.createElement("td");
-      //   var td3 = document.createElement("td");
-      //   var td4 = document.createElement("td");
-      //   var td5 = document.createElement("td");
-      //   td1.style.width = "90px";
-      //   td2.style.width = "90px";
-      //   td3.style.width = "90px";
-      //   td4.style.width = "115px";
-      //   td5.style.width = "70px";
-      //   var wind = Math.round(data.daily[i].wind_speed);
-      //   var windDirection = getDirection(data.daily[i].wind_deg);
+      for (var i = 0; i < data.hourly.length; i++) {
+        var tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #c4e3ff";
+        tr.style.padding = "5px 15px";
+        var td1 = document.createElement("td");
+        var td2 = document.createElement("td");
+        var td3 = document.createElement("td");
+        var td4 = document.createElement("td");
+        var td5 = document.createElement("td");
+        td1.style.width = "90px";
+        td2.style.width = "90px";
+        td3.style.width = "90px";
+        td4.style.width = "135px";
+        td5.style.width = "90px";
+        var wind = Math.round(data.hourly[i].wind_speed);
+        var windDirection = getDirection(data.hourly[i].wind_deg);
 
-      //   // get date
-      //   const unixTimestamp = data.daily[i].dt;
-      //   const milliseconds = unixTimestamp * 1000;
-      //   const dateObject = new Date(milliseconds);
-      //   var DOW = dateObject.toLocaleString("default", { weekday: "short" })
-      //   var date = dateObject.getDate();
+        // get hour
+        var hour = getHour(data.hourly[i].dt);
 
-      //   // fill td's
-      //   td1.innerHTML = Math.round(data.daily[i].temp.max) + "&deg;/" + Math.round(data.daily[i].temp.min) + "&deg;";
-      //   td2.innerHTML = "<img src='http://openweathermap.org/img/w/" + data.daily[i].weather[0].icon + ".png' class='icon' alt='" + data.daily[i].weather[0].description + "'>";
-      //   td3.innerHTML = rainPercent(data.daily[i].pop);
-      //   td4.innerHTML = windDirection + " " + wind + " mph";
-      //   td5.innerHTML = DOW + " " + date;
-      // // hi/lo
-      // // icon
-      // // rain/snow, etc.
-      // // % chance of rain
-      // // wind icon
-      // // wind direction
-      // // wind mph
-      // // drop down icon
-      //   table.append(tr);
-      //   tr.append(td5);
-      //   tr.append(td2);
-      //   tr.append(td1);
-      //   tr.append(td3);
-      //   tr.append(td4);
-  
-    
-    // }
- // });
-      
+        // fill td's
+        td1.innerHTML = Math.round(data.hourly[i].temp) + "&deg;";
+        td2.innerHTML = "<img src='http://openweathermap.org/img/w/" + data.hourly[i].weather[0].icon + ".png' class='icon' alt='" + data.hourly[i].weather[0].description + "'>";
+        td3.innerHTML = rainPercent(data.hourly[i].pop);
+        td4.innerHTML = windDirection + " " + wind + " mph";
+        td5.innerHTML = hour;
+        table.append(tr);
+        tr.append(td5);
+        tr.append(td2);
+        tr.append(td1);
+        tr.append(td3);
+        tr.append(td4);
+      }   
+    },
+    error: (error) => {
+      console.log('There was an error retrieving the forecast.');
+      console.log(error);
+    }
+  });
 }
 
-// // add links to nav
-// function addNav(hours, aqi) {
-  
-//   // add to nav
-//   var nav = document.getElementById("links");
-//   nav.innerHTML = "";
-//   var li = document.createElement("li");
-//   li.innerHTML = "<a href='#'>Now</a>";
-//   var li2 = document.createElement("li");
-//   li2.innerHTML = "<a href='/hourly' onclick='hourly(" + hours + ")'>Hourly</a>";
-//   var li3 = document.createElement("li");
-//   li3.innerHTML = "<a href='#'>Daily</a>";
-//   var li4 = document.createElement("li");
-//   li4.innerHTML = "<a href='/aqiDetails' onclick='aqiDetails(" + aqi + "')>AQ Index</a>";
-//   li.style.padding = "0 10px";
-//   nav.append(li);
-//   nav.append(li2);
-//   nav.append(li3);
-//   nav.append(li4);
-//   // style links
-//   var links = document.getElementsByTagName("li");
-//   for (var i = 0; i < links.length; i++) {
-//     links[i].style.padding = "0 10px";
-//     links[i].style.color = "#fff";
-//   }
-// }
+function getHour(dt) {
+  const unixTimestamp = dt;
+  const milliseconds = unixTimestamp * 1000;
+  const dateObject = new Date(milliseconds);
+  var hour = dateObject.getHours() + 1;
+  if (hour > 12) {
+    hour = hour - 12;
+    time = hour + " p.m.";
+    return time;
+  } else {
+    time = hour + " a.m.";
+    return time
+  }
+}

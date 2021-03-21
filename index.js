@@ -116,18 +116,33 @@ app.post('/cityState',(req,res) => {
   var lon = req.body.lon;
   var url = "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" + lat + "&longitude=" + lon + "&localityLanguage=en";
   axios.get(url)
-      .then(response => { 
-        var cityState = response.data;
-        res.status(200).json(cityState)
-      })
-      .catch(error => {
-        console.log('There was an error retrieving the forecast data.');
-        console.log(error);
-      });
-  })
+    .then(response => { 
+      var cityState = response.data;
+      res.status(200).json(cityState)
+    })
+    .catch(error => {
+      console.log('There was an error retrieving the forecast data.');
+      console.log(error);
+    });
+})
 
-// app.get('/hourly', (req, res) => {
-// })
+app.post('/hourly', (req, res) => {
+  var lat = req.body.lat;
+  var lon = req.body.lon;
+  var url = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + lon + "&exclude=minutely&appid=2e2fced7cda96a0e12f634c9f98ccd19&units=imperial";
+  getUrlFromForecastDB(url, function(error, result) {
+    res.status(200).json(JSON.parse(result[0].json));
+  })
+  // axios.get(url)
+  //   .then(response => { 
+  //     var cityState = response.data;
+  //     res.status(200).json(cityState)
+  //   })
+  //   .catch(error => {
+  //     console.log('There was an error retrieving the forecast data.');
+  //     console.log(error);
+  //   });
+})
 
 app.get('/weather',(req,res) => {
   var location = req.query.location;
@@ -207,7 +222,7 @@ function getUrlFromCurrentDB(url, callback) {
 
 // See if current URL is in DB
 function getUrlFromForecastDB(url, callback) {
-  var sql = "SELECT url, date, time, json FROM current WHERE url = $1";
+  var sql = "SELECT url, date, time, json FROM forecast WHERE url = $1";
   var params = [url];
 
   pool.query(sql, params, function(err, result) {

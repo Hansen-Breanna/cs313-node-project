@@ -71,6 +71,7 @@ a:visited {
   color: #6ec1e4;
   text-decoration: none;
 }
+
 @media (min-width: 576px) {
   h1 {
     font-size: 4em;
