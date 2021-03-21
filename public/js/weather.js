@@ -17,7 +17,7 @@ function weather() {
     var coord = JSON.stringify(data.coord);
     li2.innerHTML = "<a href='#' onclick='getHourly(" + coord  + ")'>Hourly</a>";
     var li3 = document.createElement("li");
-    li3.innerHTML = "<a href='#' onclick'getForecast(" + coord + ")'>Daily</a>";
+    li3.innerHTML = "<a href='#' onclick='getForecast(" + coord + ")'>Daily</a>";
     var li4 = document.createElement("li");
     //li4.innerHTML = "<a href='/aqiDetails' onclick='aqiDetails()'>AQ Index</a>";
     li2.style.padding = "0 10px";
@@ -109,6 +109,7 @@ function getDirection(deg) {
 
 // get 7-day forecast
 function getForecast(coord) {
+  console.log("get forcast called with "+coord);
   $.ajax({
     url: '/forecast',
     type: 'POST',
