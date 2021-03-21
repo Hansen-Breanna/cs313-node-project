@@ -93,22 +93,6 @@ getUrlFromForecastDB(forecastUrl, function(error, result) {
     res.status(200).json(JSON.parse(result[0].json));
   }
 });
-
-// // original
-// axios.get(forecast)
-//     .then(response => { 
-//       var forecastData = response.data;
-//       // get current date
-//       var dateObj = new Date();
-//       var date = getDate(dateObj);
-//       var time = new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });  
-//       insertForecast(forecast, date, time, response.data);
-//       res.status(200).json(forecastData)
-//     })
-//     .catch(error => {
-//       console.log('There was an error retrieving the forecast data.');
-//       console.log(error);
-//     });
 })
 
 app.post('/cityState',(req,res) => {
@@ -133,15 +117,6 @@ app.post('/hourly', (req, res) => {
   getUrlFromForecastDB(url, function(error, result) {
     res.status(200).json(JSON.parse(result[0].json));
   })
-  // axios.get(url)
-  //   .then(response => { 
-  //     var cityState = response.data;
-  //     res.status(200).json(cityState)
-  //   })
-  //   .catch(error => {
-  //     console.log('There was an error retrieving the forecast data.');
-  //     console.log(error);
-  //   });
 })
 
 app.get('/weather',(req,res) => {

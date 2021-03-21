@@ -172,8 +172,6 @@ function getForecast(coord) {
         console.log(data.alerts);
         var start = getDate(data.alerts[0].start);
         var end = getDate(data.alerts[0].end);
-        var startDate = (start.getMonth() + 1) + " " + start.getDate();
-        var endDate = end.getDate();
         p.innerHTML = data.alerts[0].event + " from " + start + " to " + end;
         p.style.textAlign = "center";
         p.style.padding = "15px 0";
