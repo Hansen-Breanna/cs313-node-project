@@ -166,6 +166,7 @@ function getForecast(coord) {
       // alert
       if (typeof data.alerts != "undefined") {
         var alert = document.getElementById("alert");
+        alert.innerHTML = "";
         alert.classList = "bg-danger";
         var p = document.createElement("p");
         console.log(data.alerts);
