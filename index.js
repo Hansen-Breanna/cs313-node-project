@@ -65,7 +65,7 @@ getUrlFromForecastDB(forecastUrl, function(error, result) {
     // get current time
     var currentTime = getTime(dateObj);
     // Check if content more is from a different day
-    if (date !== resultDate) {
+    if (date != resultDate) {
       // get data from API
       axios.get(forecastUrl)
       .then(response => {
@@ -84,6 +84,7 @@ getUrlFromForecastDB(forecastUrl, function(error, result) {
       axios.get(forecastUrl)
       .then(response => {
         updateForecast(forecastUrl, date, currentTime, response.data);
+        res.status(200).json(JSON.parse(response.data));
       })
       .catch(error => {
         console.log('There was an error');
@@ -149,7 +150,7 @@ app.get('/weather',(req,res) => {
       // get current time
       var currentTime = getTime(dateObj);
       // Check if content more is from a different day
-      if (date !== resultDate) {
+      if (date != resultDate) {
         // get data from API
         axios.get(currentUrl)
         .then(response => {
@@ -242,17 +243,19 @@ function diffMinutes(currentTime, resultDate) {
 function diffHour(currentTime, resultDate) {
   var current = currentTime.split(':');
   var result = resultDate.split(':');
-  if (current[0] != result[0]) {
-    var check = current[1] - result[1];
-    if (check < 0) {
-      return 10;
-    } else {
-      return 70;
-    }
+  var subtract = Math.abs(current[0] - result[0]);
+  if (subtract > 1) {
+    return 70;
   } else {
-    return 10;
+    var check = Math.abs(current[1] - result[1]);
+    if (check > 59) {
+      return 70;
+    } else {
+      return 10;
+    }
   }
 }
+
 // Update current data by URL
 function updateData(url, location, date, time, data) {
   var sql = "UPDATE current SET url = $1, location = $2, date = $3, time = $4, json = $5 WHERE url = $1";

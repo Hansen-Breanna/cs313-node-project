@@ -1,5 +1,3 @@
-//const { json } = require("express");
-
 function weather() {
   var location = document.getElementById("location").value;
   var home = document.getElementById("home");
@@ -10,6 +8,11 @@ function weather() {
     type: 'GET',
     dataType: 'json', 
     success: (data) => {
+    var currentData = document.getElementById("currentData");
+    currentData.style.position = "static";
+    var forecastBox = document.getElementById("forecast");
+    forecastBox.style.position = "static";
+    
       // add to nav
     var nav = document.getElementById("links");
     nav.innerHTML = "";
@@ -18,17 +21,11 @@ function weather() {
     li2.innerHTML = "<a href='#' onclick='getHourly(" + coord  + ")'>Hourly</a>";
     var li3 = document.createElement("li");
     li3.innerHTML = "<a href='#' onclick='getForecast(" + coord + ")'>Daily</a>";
-    var li4 = document.createElement("li");
-    //li4.innerHTML = "<a href='/aqiDetails' onclick='aqiDetails()'>AQ Index</a>";
     li2.style.padding = "0 10px";
     li3.style.padding = "0 10px";
-    //li4.style.padding = "0 10px";
     nav.append(li2);
     nav.append(li3);
-    //nav.append(li4);
 
-      sessionStorage.setItem("lat", data.coord.lat);
-      sessionStorage.setItem("lon", data.coord.lon);
       // get city and state
       getCityState(data.coord);
 
@@ -42,7 +39,7 @@ function weather() {
 
       // get sunrise and sunset times
       var sunrise = getTime(data.sys.sunrise);
-      var sunset = getTime(data.sys.sunset)
+      var sunset = getTime(data.sys.sunset);
       
       // get AQI and forecast
       getForecast(data.coord);
@@ -61,8 +58,7 @@ function weather() {
       display.style.backgroundImage = "linear-gradient(#18458b 0%, #fff 100%)";
       display.innerHTML = "<h2><span id='city'></span>, <span id='state'></span></h2><p class='mb-0'>As of " + time + "</p>";
       display.innerHTML += "<p class='ft-small'><span>Sunrise: " + sunrise + " a.m.</span> / <span>Sunset: " + sunset + " p.m.</span></p><p class='font-xlg mb-0 d-flex flex-nowrap align-items-center'>" + icon + temp + "&deg;</p>";
-      display.innerHTML += "<p class='mb-0'>Feels like " + feelsLike + "&deg;</p><p class='font-lg mb-0'>" + descUpper + 
-      "</p><p>Wind " + windDirection + " " + wind + " mph</p><p id='aqi'></p>";
+      display.innerHTML += "<p class='mb-0'>Feels like " + feelsLike + "&deg;</p><p class='font-lg mb-0'>" + descUpper + "</p><p>Wind: " + windDirection + " " + wind + " mph</p><p id='aqi'></p>";
     }
   });
 }
@@ -115,6 +111,19 @@ function getForecast(coord) {
     dataType: 'json',
     data: coord,
     success: (data) => {
+      // add to nav
+      var nav = document.getElementById("links");
+      // Check for alert link
+      if (nav.lastChild.textContent != "Alerts") {
+        if (typeof data.alerts != "undefined") {
+          var alerts = JSON.stringify(data.alerts[0]);
+          var li4 = document.createElement("li");
+          li4.innerHTML = "<a href='#forecast' onclick='alert(" + alerts + ")'>Alert</a>";
+          li4.style.padding = "0 10px";
+          nav.append(li4);
+        }
+      } 
+
       // add forecast table
       var display = document.getElementById("forecast");
       display.innerHTML = "";
@@ -137,22 +146,26 @@ function getForecast(coord) {
         var td4 = document.createElement("td");
         var td5 = document.createElement("td");
         td1.style.width = "90px";
-        td2.style.width = "90px";
+        td2.style.textAlign = "left";
         td3.style.width = "90px";
         td4.style.width = "115px";
         td5.style.width = "70px";
-        var wind = Math.round(data.daily[i].wind_speed);
-        var windDirection = getDirection(data.daily[i].wind_deg);
+
+        var info = data.daily[i];
+        var wind = Math.round(info.wind_speed);
+        var windDirection = getDirection(info.wind_deg);
+        var desc = info.weather[0].description;
+        var description = desc.charAt(0).toUpperCase() + desc.slice(1);
 
         // get date
-        var dateObject = getDate(data.daily[i].dt);
+        var dateObject = getDate(info.dt);
         var DOW = dateObject.toLocaleString("default", { weekday: "short" })
         var date = dateObject.getDate();
 
         // fill td's
-        td1.innerHTML = Math.round(data.daily[i].temp.max) + "&deg;/" + Math.round(data.daily[i].temp.min) + "&deg;";
-        td2.innerHTML = "<img src='http://openweathermap.org/img/w/" + data.daily[i].weather[0].icon + ".png' class='icon' alt='" + data.daily[i].weather[0].description + "'>";
-        td3.innerHTML = rainPercent(data.daily[i].pop);
+        td1.innerHTML = Math.round(info.temp.max) + "&deg;/" + Math.round(info.temp.min) + "&deg;";
+        td2.innerHTML = "<img src='http://openweathermap.org/img/w/" + info.weather[0].icon + ".png' class='icon' alt='" + description + "'> " + description;
+        td3.innerHTML = rainPercent(info.pop);
         td4.innerHTML = windDirection + " " + wind + " mph";
         td5.innerHTML = DOW + " " + date;
         table.append(tr);
@@ -167,17 +180,19 @@ function getForecast(coord) {
       if (typeof data.alerts != "undefined") {
         var alert = document.getElementById("alert");
         alert.innerHTML = "";
-        alert.classList = "bg-danger";
+        alert.classList = "bg-danger px-4";
         var p = document.createElement("p");
-        console.log(data.alerts);
         var start = getDate(data.alerts[0].start);
         var end = getDate(data.alerts[0].end);
-        p.innerHTML = data.alerts[0].event + " from " + start + " to " + end;
+        p.innerHTML = "<a href='#forecast' onclick='alert(" + alerts + ")'>" + data.alerts[0].event + "</a> from " + start + " to " + end;
         p.style.textAlign = "center";
         p.style.padding = "15px 0";
         p.style.color = "#fff";
         alert.append(p);
-      }    
+      } else {
+        var alert = document.getElementById("alert");
+        alert.innerHTML = "";
+      } 
     },
     error: (error) => {
       console.log('There was an error retrieving the forecast.');
@@ -257,6 +272,7 @@ function getDate(dt) {
   const dateObject = new Date(milliseconds);
   return dateObject;
 }
+
 // convert unix timestamp to hours and minutes
 function getTime(unix) {
   var dateObject = getDate(unix);
@@ -297,20 +313,23 @@ function getHourly(coord) {
         var td4 = document.createElement("td");
         var td5 = document.createElement("td");
         td1.style.width = "90px";
-        td2.style.width = "90px";
+        td2.style.textAlign = "left";
         td3.style.width = "90px";
         td4.style.width = "135px";
         td5.style.width = "90px";
-        var wind = Math.round(data.hourly[i].wind_speed);
-        var windDirection = getDirection(data.hourly[i].wind_deg);
+
+        var info = data.hourly[i];
+        var wind = Math.round(info.wind_speed);
+        var windDirection = getDirection(info.wind_deg);
+        var desc = info.weather[0].description;
+        var description = desc.charAt(0).toUpperCase() + desc.slice(1);
 
         // get hour
-        var hour = getHour(data.hourly[i].dt);
-
+        var hour = getHour(info.dt);
         // fill td's
-        td1.innerHTML = Math.round(data.hourly[i].temp) + "&deg;";
-        td2.innerHTML = "<img src='http://openweathermap.org/img/w/" + data.hourly[i].weather[0].icon + ".png' class='icon' alt='" + data.hourly[i].weather[0].description + "'>";
-        td3.innerHTML = rainPercent(data.hourly[i].pop);
+        td1.innerHTML = Math.round(info.temp) + "&deg;";
+        td2.innerHTML = "<img src='http://openweathermap.org/img/w/" + info.weather[0].icon + ".png' class='icon' alt='" + info.weather[0].description + "'> " + description;
+        td3.innerHTML = rainPercent(info.pop);
         td4.innerHTML = windDirection + " " + wind + " mph";
         td5.innerHTML = hour;
         table.append(tr);
@@ -339,4 +358,15 @@ function getHour(dt) {
     time = hour + " a.m.";
     return time
   }
+}
+
+function alert(data) {
+  var alertDiv = document.getElementById("forecast");
+  alertDiv.style.maxWidth = "600px";
+  alertDiv.style.position = "static";
+  alertDiv.style.backgroundColor = "#fff";
+  var alert = data;
+  var start = getDate(alert.start);
+  var end = getDate(alert.end);
+  alertDiv.innerHTML = "<h2>Alert: " + alert.sender_name + "</h2><p class='font-weight-bold'>" + start + " <br>to<br> " + end + "<p>" + alert.description + "</p>";
 }
