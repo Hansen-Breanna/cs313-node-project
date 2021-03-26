@@ -1,5 +1,6 @@
 function weather() {
   var location = document.getElementById("location").value;
+  validate(location);
   var home = document.getElementById("home");
   home.style.marginTop = "0";
 
@@ -118,7 +119,7 @@ function getForecast(coord) {
         if (typeof data.alerts != "undefined") {
           var alerts = JSON.stringify(data.alerts[0]);
           var li4 = document.createElement("li");
-          li4.innerHTML = "<a href='#forecast' onclick='alert(" + alerts + ")'>Alert</a>";
+          li4.innerHTML = "<a href='#forecast' onclick='displayAlert(" + alerts + ")'>Alert</a>";
           li4.style.padding = "0 10px";
           nav.append(li4);
         }
@@ -184,7 +185,7 @@ function getForecast(coord) {
         var p = document.createElement("p");
         var start = getDate(data.alerts[0].start);
         var end = getDate(data.alerts[0].end);
-        p.innerHTML = "<a href='#forecast' onclick='alert(" + alerts + ")'>" + data.alerts[0].event + "</a> from " + start + " to " + end;
+        p.innerHTML = "<a href='#forecast' onclick='displayAlert(" + alerts + ")'>" + data.alerts[0].event + "</a> from " + start + " to " + end;
         p.style.textAlign = "center";
         p.style.padding = "15px 0";
         p.style.color = "#fff";
@@ -360,7 +361,7 @@ function getHour(dt) {
   }
 }
 
-function alert(data) {
+function displayAlert(data) {
   var alertDiv = document.getElementById("forecast");
   alertDiv.style.maxWidth = "600px";
   alertDiv.style.position = "static";
@@ -369,4 +370,17 @@ function alert(data) {
   var start = getDate(alert.start);
   var end = getDate(alert.end);
   alertDiv.innerHTML = "<h2>Alert: " + alert.sender_name + "</h2><p class='font-weight-bold'>" + start + " <br>to<br> " + end + "<p>" + alert.description + "</p>";
+}
+
+function validate(location) {
+  const zipCodeRegex = /\d{5}/;
+  var test = zipCodeRegex.test(location);
+  var inputMessage = document.getElementById("validate");
+  if (test == false) {
+    inputMessage.classList += "bg-danger px-5 rounded text-light py-2";
+    inputMessage.innerHTML = "Please enter a valid 5 digit U.S. zip code.";
+  } else {
+    inputMessage.classList -= "bg-danger px-5 rounded text-light py-2";
+    inputMessage.innerHTML = "";
+  }
 }

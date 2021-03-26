@@ -50,7 +50,7 @@ getUrlFromForecastDB(forecastUrl, function(error, result) {
     axios.get(forecastUrl)
     .then(response => {
       insertForecast(forecastUrl, date, time, response.data);
-      res.status(200).json(response.data)
+      res.status(200).json(response.data);
     })
     .catch(error => {
       console.log('There was an error');
@@ -64,13 +64,15 @@ getUrlFromForecastDB(forecastUrl, function(error, result) {
     var resultDate = getDate(result[0].date);
     // get current time
     var currentTime = getTime(dateObj);
+    // get time difference
+    var difference = diffHour(currentTime, result[0].time);
     // Check if content more is from a different day
     if (date != resultDate) {
       // get data from API
       axios.get(forecastUrl)
       .then(response => {
         updateForecast(forecastUrl, date, currentTime, response.data);
-        res.status(200).json(response.data)
+        res.status(200).json(response.data);
       })
       .catch(error => {
         console.log('There was an error');
@@ -78,8 +80,7 @@ getUrlFromForecastDB(forecastUrl, function(error, result) {
       });
     }
     // Check if content is more than 60 minutes old
-    var difference = diffHour(currentTime, result[0].time);
-    if (difference >= 60) {
+    else if (difference >= 60) {
       // get data from API
       axios.get(forecastUrl)
       .then(response => {
@@ -90,8 +91,9 @@ getUrlFromForecastDB(forecastUrl, function(error, result) {
         console.log('There was an error');
         console.log(error);
       });
+    } else {
+      res.status(200).json(JSON.parse(result[0].json));
     }
-    res.status(200).json(JSON.parse(result[0].json));
   }
 });
 })
@@ -135,7 +137,7 @@ app.get('/weather',(req,res) => {
       axios.get(currentUrl)
       .then(response => {
         insertData(currentUrl, location, date, time, response.data);
-        res.status(200).json(response.data)
+        res.status(200).json(response.data);
       })
       .catch(error => {
         console.log('There was an error');
@@ -149,13 +151,15 @@ app.get('/weather',(req,res) => {
       var resultDate = getDate(result[0].date);
       // get current time
       var currentTime = getTime(dateObj);
+      // get time difference
+      var difference = diffMinutes(currentTime, result[0].time);
       // Check if content more is from a different day
       if (date != resultDate) {
         // get data from API
         axios.get(currentUrl)
         .then(response => {
           updateData(currentUrl, location, date, currentTime, response.data);
-          res.status(200).json(response.data)
+          res.status(200).json(response.data);
         })
         .catch(error => {
           console.log('There was an error');
@@ -163,19 +167,21 @@ app.get('/weather',(req,res) => {
         });
       }
       // Check if content is more than 10 minutes old
-      var difference = diffMinutes(currentTime, result[0].time);
-      if (difference >= 10) {
+      else if (difference >= 10) {
         // get data from API
         axios.get(currentUrl)
         .then(response => {
           updateData(currentUrl, location, date, currentTime, response.data);
+          res.status(200).json(response.data);
         })
         .catch(error => {
           console.log('There was an error');
           console.log(error);
         });
+      } else {
+        console.log(result[0].json);
+        res.status(200).json(JSON.parse(result[0].json));
       }
-      res.status(200).json(JSON.parse(result[0].json));
     }
   });
   })
