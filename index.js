@@ -304,18 +304,6 @@ function getTime(dateObj) {
   return currentTime;
 }
 
-function insertAQI(url, location, date, time, data) {
-  var sql = "INSERT INTO aqi (url, location, date, time, json) VALUES ($1, $2, $3, $4, $5)";
-  var params = [url, location, date, time, data];
-
-  pool.query(sql, params, function(err, result) {
-    if (err) {
-      console.log("An error with the DB occurred.");
-      console.log(err);
-    }
-  }); 
-}
-
 function insertForecast(url, date, time, data) {
   var sql = "INSERT INTO forecast (url, date, time, json) VALUES ($1, $2, $3, $4)";
   var params = [url, date, time, data];
