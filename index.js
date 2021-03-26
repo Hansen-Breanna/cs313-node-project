@@ -85,7 +85,7 @@ getUrlFromForecastDB(forecastUrl, function(error, result) {
       axios.get(forecastUrl)
       .then(response => {
         updateForecast(forecastUrl, date, currentTime, response.data);
-        res.status(200).json(JSON.parse(response.data));
+        res.status(200).json(response.data);
       })
       .catch(error => {
         console.log('There was an error');
