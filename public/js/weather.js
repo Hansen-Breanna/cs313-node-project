@@ -28,7 +28,7 @@ function weather() {
     nav.append(li3);
 
       // get city and state
-      getCityState(data.coord);
+      getCityState(data.coord, location);
 
       var time = new Date().toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'});
       var temp = Math.round(data.main.temp);
@@ -254,7 +254,7 @@ function rainPercent(pop) {
 }
 
 // get city and state from lat and lon
-function getCityState(coord) {
+function getCityState(coord, zip) {
   $.ajax({
     url: '/cityState',
     type: 'POST',
@@ -262,7 +262,11 @@ function getCityState(coord) {
     data:coord,
     success: (data) => {
       var city = document.getElementById("city");
-      city.textContent = data.city;
+      if (data.city.length != 0) {
+        city.textContent = data.city;
+      } else {
+        city.textContent = zip;
+      }
       var state = document.getElementById("state");
       state.textContent = data.principalSubdivision;
     },
