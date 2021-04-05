@@ -179,7 +179,6 @@ app.get('/weather',(req,res) => {
           console.log(error);
         });
       } else {
-        console.log(result[0].json);
         res.status(200).json(JSON.parse(result[0].json));
       }
     }

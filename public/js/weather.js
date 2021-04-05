@@ -146,11 +146,15 @@ function getForecast(coord) {
         var td3 = document.createElement("td");
         var td4 = document.createElement("td");
         var td5 = document.createElement("td");
+        var td6 = document.createElement("td");
         td1.style.width = "90px";
         td2.style.textAlign = "left";
+        td2.style.width = "auto";
+        //td3.classList += "d-none d-md-flex"
         td3.style.width = "90px";
         td4.style.width = "115px";
         td5.style.width = "70px";
+        td6.classList += "text-left mr-2";
 
         var info = data.daily[i];
         var wind = Math.round(info.wind_speed);
@@ -165,13 +169,15 @@ function getForecast(coord) {
 
         // fill td's
         td1.innerHTML = Math.round(info.temp.max) + "&deg;/" + Math.round(info.temp.min) + "&deg;";
-        td2.innerHTML = "<img src='http://openweathermap.org/img/w/" + info.weather[0].icon + ".png' class='icon' alt='" + description + "'> " + description;
+        td2.innerHTML = "<img src='http://openweathermap.org/img/w/" + info.weather[0].icon + ".png' class='icon' alt='" + description + "'>";
         td3.innerHTML = rainPercent(info.pop);
         td4.innerHTML = windDirection + " " + wind + " mph";
         td5.innerHTML = DOW + " " + date;
+        td6.innerHTML = description;
         table.append(tr);
         tr.append(td5);
         tr.append(td2);
+        tr.append(td6);
         tr.append(td1);
         tr.append(td3);
         tr.append(td4);
@@ -278,7 +284,13 @@ function getDate(dt) {
 function getTime(unix) {
   var dateObject = getDate(unix);
   var hour = dateObject.getHours();
-  var minutes = dateObject.getMinutes();
+  var minute = dateObject.getMinutes();
+  var minutes = "";
+  if (minute < 10) {
+    minutes = "0" + minute;
+  } else {
+    minutes = minute;
+  }
   hour = ((hour + 11) % 12 + 1);
   var time = hour + ":" + minutes;
   return time;
